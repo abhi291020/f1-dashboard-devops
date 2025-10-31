@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f1-dashboard-deployment
+  namespace: default
+  labels:
+    app: f1-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: f1-dashboard
+  template:
+    metadata:
+      labels:
+        app: f1-dashboard
+    spec:
+      containers:
+      - name: f1-dashboard
+        image: f1dashboardacr.azurecr.io/f1-dashboard:v1.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: f1-dashboard-service
+  namespace: default
+  labels:
+    app: f1-dashboard
+spec:
+  type: LoadBalancer
+  selector:
+    app: f1-dashboard
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+

@@ -1,0 +1,12 @@
+{
+  "name": "f1-dashboard",
+  "version": "1.0.0",
+  "description": "F1 Racing Analytics Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

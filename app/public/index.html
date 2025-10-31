@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Dashboard | Professional Racing Analytics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #e10600;
+            --secondary: #1e2429;
+            --accent: #fcd703;
+            --dark: #0a0a0a;
+            --light: #f5f5f5;
+            --gray: #2a2a2a;
+            --card-bg: rgba(30, 36, 41, 0.8);
+            --border: #444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark), #1a1a1a);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            color: var(--accent);
+            font-size: 2.5rem;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        .user-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            background: var(--gray);
+            border: 1px solid var(--border);
+            padding: 10px 15px 10px 40px;
+            border-radius: 30px;
+            color: white;
+            width: 250px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gray);
+            padding: 8px 15px;
+            border-radius: 30px;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 1.2rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: var(--gray);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #c10500;
+        }
+
+        .driver-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .driver-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .driver-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .podium-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .podium-item {
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .podium-position {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .first .podium-position { background: gold; }
+        .second .podium-position { background: silver; }
+        .third .podium-position { background: #cd7f32; }
+
+        .podium-driver {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .podium-team {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .podium-races {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .race-flag {
+            width: 25px;
+            height: 15px;
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .driver-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .driver-table th {
+            text-align: left;
+            padding: 12px 15px;
+            background: var(--gray);
+            color: var(--accent);
+        }
+
+        .driver-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .driver-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .driver-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .driver-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .team-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .position {
+            font-weight: bold;
+            color: var(--accent);
+            width: 30px;
+        }
+
+        .points {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--gray);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary);
+        }
+
+        .tab:hover:not(.active) {
+            background: #3a3a3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-flag-checkered"></i>
+                <h1>F1 DASHBOARD</h1>
+            </div>
+            <div class="user-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search drivers, teams...">
+                </div>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=1e2429&color=fff" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active">Standings</div>
+            <div class="tab">Drivers</div>
+            <div class="tab">Teams</div>
+            <div class="tab">Races</div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-tachometer-alt"></i> Driver Statistics</h2>
+                    <div class="card-actions">
+                        <button class="btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button class="btn"><i class="fas fa-download"></i> Export</button>
+                    </div>
+                </div>
+                <div class="driver-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">WINS</div>
+                        <div class="stat-value">52</div>
+                        <div class="stat-label">Max Verstappen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">PODIUMS</div>
+                        <div class="stat-value">102</div>
+                        <div class="stat-label">Lewis Hamilton</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">POLES</div>
+                        <div class="stat-value">103</div>
+                        <div class="stat-label">Lewis Hamilton</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">POINTS</div>
+                        <div class="stat-value">454</div>
+                        <div class="stat-label">Max Verstappen</div>
+                    </div>
+                </div>
+
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-medal"></i> Podium Finishers</h2>
+                </div>
+                <div class="podium-grid">
+                    <div class="podium-item first">
+                        <div class="podium-position">1</div>
+                        <div class="podium-driver">Max Verstappen</div>
+                        <div class="podium-team">Red Bull Racing</div>
+                        <div class="podium-races">
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                        </div>
+                    </div>
+                    <div class="podium-item second">
+                        <div class="podium-position">2</div>
+                        <div class="podium-driver">Sergio Perez</div>
+                        <div class="podium-team">Red Bull Racing</div>
+                        <div class="podium-races">
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                            <div class="race-flag" style="background: #1e5bc6;"></div>
+                        </div>
+                    </div>
+                    <div class="podium-item third">
+                        <div class="podium-position">3</div>
+                        <div class="podium-driver">Lewis Hamilton</div>
+                        <div class="podium-team">Mercedes</div>
+                        <div class="podium-races">
+                            <div class="race-flag" style="background: #00d2be;"></div>
+                            <div class="race-flag" style="background: #00d2be;"></div>
+                            <div class="race-flag" style="background: #00d2be;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Championship Points</h2>
+                    <div class="card-actions">
+                        <select class="btn">
+                            <option>2023 Season</option>
+                            <option>2022 Season</option>
+                            <option>2021 Season</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pointsChart"></canvas>
+                </div>
+
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-car"></i> Team Performance</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="teamChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-users"></i> Driver Standings</h2>
+                <div class="card-actions">
+                    <button class="btn btn-primary">View All</button>
+                </div>
+            </div>
+            <table class="driver-table">
+                <thead>
+                    <tr>
+                        <th>POS</th>
+                        <th>DRIVER</th>
+                        <th>TEAM</th>
+                        <th>PTS</th>
+                        <th>WINS</th>
+                        <th>PODIUMS</th>
+                        <th>POLES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="position">1</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar" style="background: #1e5bc6;">MV</div>
+                                <div>Max Verstappen</div>
+                            </div>
+                        </td>
+                        <td><span class="team-color" style="background: #1e5bc6;"></span> Red Bull</td>
+                        <td class="points">454</td>
+                        <td>19</td>
+                        <td>21</td>
+                        <td>15</td>
+                    </tr>
+                    <tr>
+                        <td class="position">2</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar" style="background: #1e5bc6;">SP</div>
+                                <div>Sergio Perez</div>
+                            </div>
+                        </td>
+                        <td><span class="team-color" style="background: #1e5bc6;"></span> Red Bull</td>
+                        <td class="points">206</td>
+                        <td>1</td>
+                        <td>6</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td class="position">3</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar" style="background: #00d2be;">LH</div>
+                                <div>Lewis Hamilton</div>
+                            </div>
+                        </td>
+                        <td><span class="team-color" style="background: #00d2be;"></span> Mercedes</td>
+                        <td class="points">205</td>
+                        <td>0</td>
+                        <td>5</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td class="position">4</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar" style="background: #00d2be;">GB</div>
+                                <div>George Russell</div>
+                            </div>
+                        </td>
+                        <td><span class="team-color" style="background: #00d2be;"></span> Mercedes</td>
+                        <td class="points">204</td>
+                        <td>1</td>
+                        <td>6</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="position">5</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar" style="background: #0600ef;">CL</div>
+                                <div>Carlos Sainz</div>
+                            </div>
+                        </td>
+                        <td><span class="team-color" style="background: #dc143c;"></span> Ferrari</td>
+                        <td class="points">206</td>
+                        <td>2</td>
+                        <td>6</td>
+                        <td>2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>F1 Dashboard &copy; 2023 | Real-time racing analytics | Data updates every 5 minutes</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Points chart
+            const pointsCtx = document.getElementById('pointsChart').getContext('2d');
+            const pointsChart = new Chart(pointsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Bahrain', 'Saudi', 'Australia', 'Emilia', 'Miami', 'Monaco', 'Spain', 'Canada', 'Austria', 'Britain', 'Hungary', 'Belgium', 'Netherlands', 'Italy', 'Singapore', 'Japan', 'Qatar', 'USA', 'Mexico', 'Brazil', 'UAE'],
+                    datasets: [
+                        {
+                            label: 'Max Verstappen',
+                            data: [26, 44, 65, 93, 121, 149, 177, 205, 233, 261, 289, 317, 345, 373, 401, 429, 454, 454, 454, 454, 454],
+                            borderColor: '#1e5bc6',
+                            backgroundColor: 'rgba(30, 91, 198, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Sergio Perez',
+                            data: [18, 25, 36, 64, 92, 120, 148, 176, 204, 232, 260, 288, 316, 344, 372, 400, 428, 456, 484, 512, 540],
+                            borderColor: '#1e5bc6',
+                            borderDash: [5, 5],
+                            backgroundColor: 'rgba(30, 91, 198, 0.05)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Lewis Hamilton',
+                            data: [18, 31, 49, 77, 105, 133, 161, 189, 217, 245, 273, 301, 329, 357, 385, 413, 441, 469, 497, 525, 553],
+                            borderColor: '#00d2be',
+                            backgroundColor: 'rgba(0, 210, 190, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ddd'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#aaa'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#aaa'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Team chart
+            const teamCtx = document.getElementById('teamChart').getContext('2d');
+            const teamChart = new Chart(teamCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Red Bull', 'Mercedes', 'Ferrari', 'McLaren', 'Alpine', 'Williams', 'Aston Martin', 'Alfa Romeo', 'Haas', 'AlphaTauri'],
+                    datasets: [
+                        {
+                            label: '2023 Points',
+                            data: [660, 409, 387, 194, 120, 28, 120, 14, 12, 12],
+                            backgroundColor: [
+                                'rgba(30, 91, 198, 0.7)',
+                                'rgba(0, 210, 190, 0.7)',
+                                'rgba(220, 20, 60, 0.7)',
+                                'rgba(255, 128, 0, 0.7)',
+                                'rgba(245, 166, 35, 0.7)',
+                                'rgba(0, 94, 188, 0.7)',
+                                'rgba(0, 153, 76, 0.7)',
+                                'rgba(196, 13, 13, 0.7)',
+                                'rgba(204, 0, 0, 0.7)',
+                                'rgba(53, 144, 213, 0.7)'
+                            ],
+                            borderColor: [
+                                '#1e5bc6',
+                                '#00d2be',
+                                '#dc143c',
+                                '#ff8000',
+                                '#f5a623',
+                                '#005eac',
+                                '#00994c',
+                                '#c40d0d',
+                                '#cc0000',
+                                '#3590d5'
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#aaa'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#aaa'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+---
+- name: Deploy F1 Dashboard to AKS
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+
+    - name: Ensure kubectl is installed
+      command: kubectl version --client
+      register: kubectl_version
+      ignore_errors: no
+
+    - name: Display kubectl version
+      debug:
+        msg: "{{ kubectl_version.stdout }}"
+
+    - name: Create deployment and service using kubectl
+      shell: |
+        kubectl apply -f k8s-deployment.yaml
+
+    - name: Verify pods are running
+      shell: |
+        kubectl get pods -o wide
+      register: pod_status
+
+    - name: Display pod status
+      debug:
+        msg: "{{ pod_status.stdout }}"
+
+
+
